@@ -14,6 +14,31 @@
 </head>
 
 <body>
+    <div class="container">
+
+        <header>
+            <h1>Products Management</h1>
+            <button id="addProductBtn" class="btn-primary">Add new product</button>
+        </header>
+
+        <div class="searchContainer">
+            <input type="text" id="searchInput" placeholder="Search a product by name or description">
+        </div>
+
+        <div id="loadingIndicator" class="loading">Loading...</div>
+        <div id="tableContainer"></div>
+        <div id="paginationContainer"></div>
+
+    </div>
+
+    <!-- Modalul -->
+    <div id="productModal" class="modal">
+        <div class="modalContent">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">Add a product</h2>
+            <form id="productForm"></form>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
