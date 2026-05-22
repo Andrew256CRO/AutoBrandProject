@@ -49,7 +49,7 @@ class ProductsController
         header('Content-Type: application/json');
 
         $page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
-        $limit = 10;
+        $limit = 5;
 
         $products = $this->model->getProducts($page, $limit);
         $totalProducts = $this->model->getTotalProducts();
@@ -75,7 +75,7 @@ class ProductsController
 
         $searchTerm = $_GET['search'] ?? '';
         $page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
-        $limit = 10;
+        $limit = 5;
 
         if (empty($searchTerm)) {
             $this->handleRead();
