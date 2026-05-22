@@ -42,7 +42,7 @@ class ProductsModel
 
     }
 
-    public function getProductsById($id)
+    public function getProductById($id)
     {
         try {
             $query = $this->con->prepare("SELECT * FROM products WHERE Id= :$id");
