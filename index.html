@@ -5,10 +5,7 @@
     <title>Full stack app</title>
     <meta lang="en-US">
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!--This gives the browser instructions on how to control the page's dimensions and scaling.-->
-
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/x-icon" href="AutoBrand.png">
 </head>
@@ -18,7 +15,11 @@
 
         <header>
             <h1>Products Management</h1>
-            <button id="addProductBtn" class="btn-primary">Add new product</button>
+            <div class="header-buttons">
+                <button id="addProductBtn" class="btn-primary">Add new product</button>
+                <button id="uploadPdfBtn" class="btn-secondary">Upload Invoice PDF</button>
+                <input type="file" id="pdfInput" accept=".pdf" style="display:none">
+            </div>
         </header>
 
         <div class="searchContainer">
@@ -31,12 +32,21 @@
 
     </div>
 
-    <!-- Modalul -->
+    <!-- Modal produse -->
     <div id="productModal" class="modal">
         <div class="modalContent">
             <span class="close">&times;</span>
             <h2 id="modalTitle">Add a product</h2>
             <form id="productForm"></form>
+        </div>
+    </div>
+
+    <!-- Modal PDF -->
+    <div id="pdfModal" class="modal">
+        <div class="modalContent">
+            <span class="close-pdf">&times;</span>
+            <h2>Invoice Data</h2>
+            <div id="pdfResults"></div>
         </div>
     </div>
 

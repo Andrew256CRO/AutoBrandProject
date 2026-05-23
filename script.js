@@ -123,6 +123,10 @@ function closeModal() {
     clearFormErrors();
 }
 
+function closePdfModal() {
+    document.getElementById('pdfModal').style.display = 'none';
+}
+
 function handleCreateProduct(e) {
     e.preventDefault();
     clearFormErrors();
@@ -225,6 +229,70 @@ function deleteProduct(productId) {
         });
 }
 
+function handlePdfUpload(file) {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('pdf', file);
+
+    showMessage('Parsing PDF...', 'success');
+
+    fetch('pdfController.php', {
+        method: 'POST',
+        body: formData
+    })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+            if (data.success) {
+                showPdfResults(data.products, data.csv);
+            } else {
+                showMessage(data.message || 'Error parsing PDF', 'error');
+            }
+        })
+        .catch(function (error) {
+            console.error('Error:', error);
+            showMessage('Error parsing PDF', 'error');
+        });
+}
+
+function showPdfResults(products, csv) {
+    const modal = document.getElementById('pdfModal');
+    const results = document.getElementById('pdfResults');
+
+    let html = '<table class="products-table" style="min-width:auto;margin-bottom:1rem;">';
+    html += '<thead><tr>';
+    html += '<th>Cod Produs</th><th>Denumire</th><th>Pret Unitar</th><th>Moneda</th><th>Cantitate</th>';
+    html += '</tr></thead><tbody>';
+
+    products.forEach(function (p) {
+        html += '<tr>';
+        html += '<td>' + p.cod_produs + '</td>';
+        html += '<td>' + p.denumire + '</td>';
+        html += '<td>' + p.pret_unitar + '</td>';
+        html += '<td>' + p.moneda + '</td>';
+        html += '<td>' + p.cantitate + '</td>';
+        html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    html += '<button class="btn-primary" onclick="downloadCSV()">Download CSV</button>';
+
+    results.innerHTML = html;
+    results.dataset.csv = csv;
+    modal.style.display = 'block';
+}
+
+function downloadCSV() {
+    const csv = document.getElementById('pdfResults').dataset.csv;
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'invoice_products.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
 function displayFormErrors(errors) {
     for (let field in errors) {
         const errorElement = document.getElementById('error-' + field);
@@ -265,11 +333,22 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('addProductBtn').addEventListener('click', openAddModal);
     document.getElementById('searchInput').addEventListener('input', debounceSearch);
     document.querySelector('.close').addEventListener('click', closeModal);
+    document.querySelector('.close-pdf').addEventListener('click', closePdfModal);
+
+    document.getElementById('uploadPdfBtn').addEventListener('click', function () {
+        document.getElementById('pdfInput').click();
+    });
+
+    document.getElementById('pdfInput').addEventListener('change', function () {
+        if (this.files && this.files[0]) {
+            handlePdfUpload(this.files[0]);
+        }
+    });
 
     window.addEventListener('click', function (event) {
         const modal = document.getElementById('productModal');
-        if (event.target === modal) {
-            closeModal();
-        }
+        const pdfModal = document.getElementById('pdfModal');
+        if (event.target === modal) closeModal();
+        if (event.target === pdfModal) closePdfModal();
     });
 });

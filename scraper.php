@@ -214,7 +214,7 @@ function saveProducts($products, $exchangeRate)
     return ['inserted' => $inserted, 'skipped' => $skipped];
 }
 
-// ===== MAIN =====
+// asta e un fel de main sa zicem
 echo "Starting scraper...\n";
 
 echo "Fetching exchange rate...\n";
@@ -229,7 +229,7 @@ echo "Scraping products...\n";
 $products = scrapeProducts($cookieFile);
 echo "Found (raw): " . count($products) . " products.\n";
 
-// Deduplicare inainte de salvare
+// deduplicare inainte de salvare
 $products = deduplicateProducts($products);
 echo "After deduplication: " . count($products) . " unique products.\n";
 

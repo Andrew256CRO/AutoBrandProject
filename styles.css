@@ -412,3 +412,21 @@ mark {
 .sort-active {
     color: var(--primary);
 }
+
+/* ===== HEADER BUTTONS ===== */
+.header-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .header-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .header-buttons button {
+        width: 100%;
+    }
+}
