@@ -11,19 +11,28 @@ class ProductsModel
         $this->con = $con;
     }
 
-    public function getProducts($page, $limit)
+    // Coloane permise pentru sortare - securitate, ca sa nu permitem SQL injection
+    private $allowedSortColumns = ['Name', 'Price', 'Currency', 'Price_RON', 'Exchange_rate'];
+    private $allowedSortDirections = ['ASC', 'DESC'];
+
+    private function buildOrderClause($sortBy, $sortDir)
+    {
+        $column = in_array($sortBy, $this->allowedSortColumns) ? $sortBy : 'Name';
+        $direction = in_array(strtoupper($sortDir), $this->allowedSortDirections) ? strtoupper($sortDir) : 'ASC';
+        return "ORDER BY $column $direction";
+    }
+
+    public function getProducts($page, $limit, $sortBy = 'Name', $sortDir = 'ASC')
     {
         try {
             $offset = ($page - 1) * $limit;
+            $orderClause = $this->buildOrderClause($sortBy, $sortDir);
 
-            /* Execute a prepared statement by binding PHP variables */
-            $query = $this->con->prepare("SELECT * FROM products LIMIT :limit OFFSET :offset");
-
-            /* Sets a parameter value using its name. Optionally, parameter names can also be prefixed with colons ":" */
+            $query = $this->con->prepare("SELECT * FROM products $orderClause LIMIT :limit OFFSET :offset");
             $query->bindValue(':limit', $limit, PDO::PARAM_INT);
             $query->bindValue(':offset', $offset, PDO::PARAM_INT);
             $query->execute();
-            return $query->fetchAll(PDO::FETCH_ASSOC); //returns an array, "fetch" == Fetches the remaining rows from a result set
+            return $query->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             return [];
         }
@@ -34,18 +43,17 @@ class ProductsModel
         try {
             $query = $this->con->prepare("SELECT COUNT(*) as total FROM products");
             $query->execute();
-            $result = $query->fetch(PDO::FETCH_ASSOC);//fetch == Fetches the next row from a result set
+            $result = $query->fetch(PDO::FETCH_ASSOC);
             return (int) $result['total'];
         } catch (Exception $e) {
             return 0;
         }
-
     }
 
     public function getProductById($id)
     {
         try {
-            $query = $this->con->prepare("SELECT * FROM products WHERE Id= :$id");
+            $query = $this->con->prepare("SELECT * FROM products WHERE Id = :id");
             $query->bindValue(':id', $id, PDO::PARAM_INT);
             $query->execute();
             return $query->fetch(PDO::FETCH_ASSOC);
@@ -54,13 +62,15 @@ class ProductsModel
         }
     }
 
-    public function searchProducts($searchTerm, $page, $limit)
+    public function searchProducts($searchTerm, $page, $limit, $sortBy = 'Name', $sortDir = 'ASC')
     {
         try {
             $offset = ($page - 1) * $limit;
-            $searchTerm = "%" . $searchTerm . "%";//concatenare stringuri, gaseste orice contine termenul cautat oriunde in string
-            $query = $this->con->prepare("SELECT * FROM products WHERE Name LIKE :search OR Description LIKE :search LIMIT :limit OFFSET :offset");
-            $query->bindValue(':search', $searchTerm, PDO::PARAM_STR);//practic search primeste valoarea din searchterm (o atribui pe romaneste)
+            $searchTerm = "%" . $searchTerm . "%";
+            $orderClause = $this->buildOrderClause($sortBy, $sortDir);
+
+            $query = $this->con->prepare("SELECT * FROM products WHERE Name LIKE :search OR Description LIKE :search $orderClause LIMIT :limit OFFSET :offset");
+            $query->bindValue(':search', $searchTerm, PDO::PARAM_STR);
             $query->bindValue(':limit', $limit, PDO::PARAM_INT);
             $query->bindValue(':offset', $offset, PDO::PARAM_INT);
             $query->execute();
@@ -74,7 +84,6 @@ class ProductsModel
     {
         try {
             $searchTerm = '%' . $searchTerm . '%';
-
             $query = $this->con->prepare("SELECT COUNT(*) AS total FROM products WHERE Name LIKE :search OR Description LIKE :search");
             $query->bindValue(':search', $searchTerm, PDO::PARAM_STR);
             $query->execute();
@@ -83,7 +92,6 @@ class ProductsModel
         } catch (Exception $e) {
             return 0;
         }
-
     }
 
     public function createProduct($data)
@@ -145,5 +153,4 @@ class ProductsModel
         }
     }
 }
-
 ?>

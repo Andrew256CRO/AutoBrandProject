@@ -1,9 +1,10 @@
-"use strict";//pentru siguranta, cum e si normal. Ca sa nu folosesc de exemplu variabile nedeclarate
-//Il declar la inceputul fisierului, deci e global pe tot scriptul
+"use strict";
 
 let currentPage = 1;
 const limit = 5;
 let currentSearchTerm = '';
+let currentSortBy = 'Name';
+let currentSortDir = 'ASC';
 
 async function loadProducts(page) {
     if (page === undefined || page < 1) {
@@ -17,10 +18,15 @@ async function loadProducts(page) {
         loadingIndicator.style.display = 'block';
         tableContainer.innerHTML = '';
 
-        let url = 'productsController.php?action=read&page=' + page;
+        let url = 'productsController.php?action=read&page=' + page
+            + '&sortBy=' + currentSortBy
+            + '&sortDir=' + currentSortDir;
 
         if (currentSearchTerm) {
-            url = 'productsController.php?action=search&search=' + encodeURIComponent(currentSearchTerm) + '&page=' + page;
+            url = 'productsController.php?action=search&search=' + encodeURIComponent(currentSearchTerm)
+                + '&page=' + page
+                + '&sortBy=' + currentSortBy
+                + '&sortDir=' + currentSortDir;
         }
 
         const response = await fetch(url);
@@ -28,6 +34,8 @@ async function loadProducts(page) {
 
         if (data.success) {
             currentPage = data.currentPage;
+            currentSortBy = data.sortBy;
+            currentSortDir = data.sortDir;
             tableContainer.innerHTML = data.tableHtml;
             document.getElementById('paginationContainer').innerHTML = data.paginationHtml;
         } else {
@@ -39,6 +47,13 @@ async function loadProducts(page) {
     } finally {
         loadingIndicator.style.display = 'none';
     }
+}
+
+function sortBy(column, direction) {
+    currentSortBy = column;
+    currentSortDir = direction;
+    currentPage = 1;
+    loadProducts(1);
 }
 
 function handleSearch() {

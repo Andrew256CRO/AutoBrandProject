@@ -398,3 +398,17 @@ mark {
         color: var(--text);
     }
 }
+
+/* ===== SORTARE ===== */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sortable:hover {
+    background-color: var(--border);
+}
+
+.sort-active {
+    color: var(--primary);
+}

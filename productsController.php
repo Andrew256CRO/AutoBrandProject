@@ -8,7 +8,7 @@ class ProductsController
 
     public function __construct()
     {
-        $this->model = new ProductsModel();//aici imi initializez obiectul ca sa pot accesa metodele
+        $this->model = new ProductsModel();
     }
 
     public function handleRequest()
@@ -44,19 +44,36 @@ class ProductsController
         }
     }
 
+    // Extragem si validam parametrii de sortare din GET
+    private function getSortParams()
+    {
+        $allowedColumns = ['Name', 'Price', 'Currency', 'Price_RON', 'Exchange_rate'];
+        $allowedDirections = ['ASC', 'DESC'];
+
+        $sortBy = $_GET['sortBy'] ?? 'Name';
+        $sortDir = strtoupper($_GET['sortDir'] ?? 'ASC');
+
+        if (!in_array($sortBy, $allowedColumns))
+            $sortBy = 'Name';
+        if (!in_array($sortDir, $allowedDirections))
+            $sortDir = 'ASC';
+
+        return [$sortBy, $sortDir];
+    }
+
     private function handleRead()
     {
         header('Content-Type: application/json');
 
         $page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
         $limit = 5;
+        [$sortBy, $sortDir] = $this->getSortParams();
 
-        $products = $this->model->getProducts($page, $limit);
+        $products = $this->model->getProducts($page, $limit, $sortBy, $sortDir);
         $totalProducts = $this->model->getTotalProducts();
         $totalPages = ceil($totalProducts / $limit);
 
-        //De asta le-am facut metodele statice, ca sa nu mai trebuiasca sa initializez un obiect, dar se poate si invers, desigur
-        $tableHtml = ProductsView::renderProductsTable($products, '');
+        $tableHtml = ProductsView::renderProductsTable($products, '', $sortBy, $sortDir);
         $paginationHtml = ProductsView::renderPagination($page, $totalPages);
 
         echo json_encode([
@@ -65,7 +82,9 @@ class ProductsController
             'paginationHtml' => $paginationHtml,
             'currentPage' => $page,
             'totalPages' => $totalPages,
-            'totalProducts' => $totalProducts
+            'totalProducts' => $totalProducts,
+            'sortBy' => $sortBy,
+            'sortDir' => $sortDir
         ]);
     }
 
@@ -76,17 +95,18 @@ class ProductsController
         $searchTerm = $_GET['search'] ?? '';
         $page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
         $limit = 5;
+        [$sortBy, $sortDir] = $this->getSortParams();
 
         if (empty($searchTerm)) {
             $this->handleRead();
             return;
         }
 
-        $products = $this->model->searchProducts($searchTerm, $page, $limit);
+        $products = $this->model->searchProducts($searchTerm, $page, $limit, $sortBy, $sortDir);
         $totalProducts = $this->model->getTotalSearchResults($searchTerm);
         $totalPages = ceil($totalProducts / $limit);
 
-        $tableHtml = ProductsView::renderProductsTable($products, $searchTerm);
+        $tableHtml = ProductsView::renderProductsTable($products, $searchTerm, $sortBy, $sortDir);
         $paginationHtml = ProductsView::renderPagination($page, $totalPages);
 
         echo json_encode([
@@ -96,7 +116,9 @@ class ProductsController
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalProducts' => $totalProducts,
-            'searchTerm' => $searchTerm
+            'searchTerm' => $searchTerm,
+            'sortBy' => $sortBy,
+            'sortDir' => $sortDir
         ]);
     }
 

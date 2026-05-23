@@ -12,22 +12,38 @@ class ProductsView
         return $highlighted;
     }
 
-    public static function renderProductsTable($products, $searchTerm = '')
+    // Construieste header-ul de coloana cu sageata de sortare
+    private static function renderSortableHeader($label, $column, $currentSortBy, $currentSortDir)
+    {
+        $isActive = ($currentSortBy === $column);
+        $newDir = ($isActive && $currentSortDir === 'ASC') ? 'DESC' : 'ASC';
+
+        $arrow = '';
+        if ($isActive) {
+            $arrow = $currentSortDir === 'ASC' ? ' ▲' : ' ▼';
+        }
+
+        return '<th class="sortable' . ($isActive ? ' sort-active' : '') . '" 
+                    onclick="sortBy(\'' . $column . '\', \'' . $newDir . '\')">'
+            . $label . $arrow .
+            '</th>';
+    }
+
+    public static function renderProductsTable($products, $searchTerm = '', $sortBy = 'Name', $sortDir = 'ASC')
     {
         if (empty($products)) {
             return '<p class="text-center">No products found</p>';
         }
 
-        //Acum construiesc efectiv tabelul cu coloanele respective
         $html = '<table class="products-table">';
         $html .= '<thead><tr>';
         $html .= '<th>Image</th>';
-        $html .= '<th>Name</th>';
+        $html .= self::renderSortableHeader('Name', 'Name', $sortBy, $sortDir);
         $html .= '<th>Description</th>';
-        $html .= '<th>Price</th>';
-        $html .= '<th>Currency</th>';
-        $html .= '<th>Price (RON)</th>';
-        $html .= '<th>Exchange Rate</th>';
+        $html .= self::renderSortableHeader('Price', 'Price', $sortBy, $sortDir);
+        $html .= self::renderSortableHeader('Currency', 'Currency', $sortBy, $sortDir);
+        $html .= self::renderSortableHeader('Price (RON)', 'Price_RON', $sortBy, $sortDir);
+        $html .= self::renderSortableHeader('Exchange Rate', 'Exchange_rate', $sortBy, $sortDir);
         $html .= '<th>Actions</th>';
         $html .= '</tr></thead>';
         $html .= '<tbody>';
