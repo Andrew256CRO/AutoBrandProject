@@ -135,7 +135,7 @@ class ProductsModel
                     Price = :price,
                     Currency = :currency,
                     Image = :image,
-                    Price_RON = :price_ron,
+                    Price_RON = :price * :exchange_rate,
                     Exchange_rate = :exchange_rate
                 WHERE Id = :id
             ");
